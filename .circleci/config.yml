@@ -1,26 +1,61 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/configuration-reference/#jobs
+orbs:
+  aws-cli: circleci/aws-cli@1.4.1
+  aws-ecr: circleci/aws-ecr@6.7.0
+
+# Depends on the following ENV vars:
+#   * GITHUB_DEPLOY_TOKEN_USER
+#   * GITHUB_DEPLOY_TOKEN_SECRET
+  image-builder: included-health/image-builder@1
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
+  build_and_push_cubestore:
+    environment:
+      DOCKER_BUILDKIT: 1
     docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
+      - image: $ECR_ENDPOINT/image-builder:master
+    resource_class: large
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.6
+          docker_layer_caching: true
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: build docker image
+          command: |
+            cd rust/cubestore && build-and-push  \
+            --image cubestore-base \
+            --file Dockerfile
+  build_and_push_cubejs:
+    environment:
+      DOCKER_BUILDKIT: 1
+    docker:
+      - image: $ECR_ENDPOINT/image-builder:master
+    resource_class: large
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.6
+          docker_layer_caching: true
+      - run:
+          name: build docker image
+          command: |
+            build-and-push  \
+            --image cube-base \
+            --file ./packages/cubejs-docker/dev.Dockerfile
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/configuration-reference/#workflows
+
 workflows:
-  say-hello-workflow:
+  version: 2
+  build_and_test_workflow:
     jobs:
-      - say-hello
+      - build_and_push_cubestore:
+          context:
+            - dod-pypi
+            - ecr
+            - grh-drone
+      - build_and_push_cubejs:
+          context:
+            - dod-pypi
+            - ecr
+            - grh-drone
