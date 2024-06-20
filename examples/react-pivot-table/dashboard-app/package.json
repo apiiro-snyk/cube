@@ -7,7 +7,7 @@
     "@ant-design/icons": "^4.6.2",
     "@apollo/react-hooks": "^4.0.0",
     "@cube-dev/example-wrapper": "^1.1.10",
-    "@cubejs-client/core": "^0.26.61",
+    "@cubejs-client/core": "^0.35.23",
     "@cubejs-client/react": "^0.26.61",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
