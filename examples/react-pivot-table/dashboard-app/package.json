@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/compatible": "^1.0.8",
-    "@ant-design/icons": "^4.6.2",
+    "@ant-design/icons": "^4.8.3",
     "@apollo/react-hooks": "^4.0.0",
     "@cube-dev/example-wrapper": "^1.1.10",
     "@cubejs-client/core": "^0.26.61",
